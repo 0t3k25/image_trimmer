@@ -7,7 +7,10 @@ RUN mkdir /app
 # 作業ディレクトリの設定
 WORKDIR /app
 
-RUN apt-get update && apt-get install -y git
+RUN apt-get update && apt-get install -y git \
+libgl1-mesa-glx \
+libglib2.0-0 \
+libgtk2.0-dev
 
 COPY requirements.txt .
 
