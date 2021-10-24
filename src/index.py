@@ -24,33 +24,46 @@ cv2.imwrite((image_path.parent / "output.jpeg").as_posix(), trimmed_image)
 # print(height)
 # print(width)
 print(image_resized.shape)
-"""
-for i in range(10):
-    keycap[i] = [[10 * i, 10 * (i + 1)], [20, 30]]
-"""
+
+# キーキャップの比率
+keycap_height: "int" = 15
+keycap_width: "int" = 13
+ratio = keycap_width / keycap_height
+print(ratio)
 # キーの作成
 # 座標を切る
 # 最初の場所を決めて切る、最初の場所がわかれば次の場所もわかるのでそこも同じように切る。
 # とりあえず同じ大きさで切っていき、一番小さいキーを作る。
-keycap = []
-# 1行目作成
+# keycap 初期化
+keycap_line_1 = [[[0, 1], [82 * i, 82 * (i + 1)]] for i in range(13)]  # リスト内包表記
+keycap_line_1.append([[0, 144], [82 * 13, 1280]])  # backspace
+
+keycap_line_2 = [None] * 14
 for i in range(14):
-    keycap[i] = [[0, 144], [82 * i, 82 * (i + 1)]]
-    # backspacekey対応
-    if i == 13:
-        keycap[i] = [[0, 144], [82 * i, 1280]]
-    trimmed_image = image[
-        keycap[i][0][0] : keycap[i][0][1], keycap[i][1][0] : keycap[i][1][1]
-    ]
-# 2行目作成
-for i in range(29):
-    keycap[i] = [[0, 144], [82 * i, 82 * (i + 1)]]
+    keycap_line_2[i] = [[0, 144], [82 * i, 82 * (i + 1)]]
     # Tabkey対応
     if i == 0:
-        keycap[i] = [[0, 144], [0, 111]]
+        keycap_line_2[i] = [[0, 144], [0, 111]]
     elif i == 13:
-        keycap[i] = [[0, 144], [111 + 82 * (i - 1), 1280]]
-    trimmed_image = image[
-        keycap[i][0][0] : keycap[i][0][1], keycap[i][1][0] : keycap[i][1][1]
-    ]
-    cv2.imwrite((image_path.parent / f"output{i}.jpeg").as_posix(), trimmed_image)
+        keycap_line_2[i] = [[0, 144], [111 + 82 * (i - 1), 1280]]
+
+keycap = [keycap_line_1, keycap_line_2]
+# 1行目作成
+trimmed_image_list = []
+for keycap_line in keycap:
+    for keycap_range in keycap_line:
+        trimmed_image = image[
+            keycap_range[0][0] : keycap_range[0][1],
+            keycap_range[1][0] : keycap_range[1][1],
+        ]
+        trimmed_image_list.append(trimmed_image)
+
+for i, image in enumerate(trimmed_image_list):
+    cv2.imwrite((image_path.parent / f"output_{i:04}.jpeg").as_posix(), image)
+
+
+def a(c: int) -> int:
+    if c == 1:
+        return 1
+    else:
+        return 2
