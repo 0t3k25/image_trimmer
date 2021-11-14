@@ -1,87 +1,110 @@
 from pathlib import Path
 
+import json
+import decide_pixcel
 import cv2
 import numpy as np
 
-import json
 
-# キーボードの形式(json)のパス
-
-# 値によってどのキーボードの形式か判別
-keyboard_mold = open()
+# キーボードの形式が設定してあるファイルまでのパス
+keycap_config_path = Path(__file__).parent.parent / "keyconfig/keycap_config.json"
+# json読み込み
+keycap_config_json_file = open(keycap_config_path.as_posix(), "r")
+keycap_config_json = json.load(keycap_config_json_file)
 # 受け取ったファイルの形式が正しいか確認（あとで書く）
-
+# キーボードの大きさ
+keyboard_width = 27.2
+keyboard_height = 9
 # 画像までのパス
 image_path = Path(__file__).parent / "sample.jpeg"
 # 画像読み込み
 image = cv2.imread(image_path.as_posix())
 # 画像の大きさ
-image_height = image.shape[0]
-image_width = image.shape[1]
-print(image.shape)
-# 1番小さいキーキャップの縦横比率
-letterkey_height: "int" = 1.8
-letterkey_width: "int" = 1.8
-letterkey_width_height_ratio = letterkey_height / letterkey_width
-# tabキー
-tabkey_height: "int" = 1.8
-tabkey_width: "int" = 2.8
-tabkey_width_height_ratio = tabkey_width / tabkey_height
-# capsキー
-capskey_height: "int" = 1.8
-capskey_width: "int" = 3.3
-capskey_width_height_ratio = capskey_width / capskey_height
-# キーボードの縦の長さ(cm)
-total_height = 1.8 * 5
-# キーボードの横の長さ(cm)
-total_width = 1.8 * 13 + 3.8
-# キーボードの縦と横の比率
-ratio = total_height / total_width
-# 画像の大きさ設定
-image = cv2.resize(image, (int(image_width), int(image_width * ratio)))
-image_height = image.shape[0]
-image_width = image.shape[1]
-# letterkeyのピクセル数
-letterkey_width_pixel_num = int(image_height / 5)
-letterkey_height_pixel_num = int(image_height / 5)
-# tabkeyのピクセル数
-tabkey_width_pixel_num = int(letterkey_width_pixel_num * tabkey_width_height_ratio)
-# capskeyのピクセル数
-capskey_width_pixel_num = int(letterkey_width_pixel_num * capskey_width_height_ratio)
+image_height, image_width = image.shape[:2]
+# 画像の高さ決定および変更
+mod_image_height = decide_pixcel.caluclate_height_pixcel_num(
+    image_width,
+    keyboard_width,
+    keyboard_height,
+)
+# 大きさが規定の大きさなら変更しない
+if image_height != mod_image_height:
+    image = cv2.resize(image, (int(image_width), int(mod_image_height)))
+    image_height = image.shape[0]
+# ユーザーに登録してもらった値よりそれぞれのキーのピクセル数を出す
+keycap_sizes = [
+    decide_pixcel.keycap_width_height_pixcel_nun(
+        image_width,
+        image_height,
+        keyboard_width,
+        keyboard_height,
+        keycap_config["width"],
+        keycap_config["height"],
+    )
+    for keycap_config in keycap_config_json.values()
+]
 # keycap 初期化
 # keycap_config = [[[y, dy], [x, dx]]]
+# 1列目作成
 keycap_line_1 = [
     [
-        [0, letterkey_height_pixel_num],
-        [letterkey_width_pixel_num * i, letterkey_width_pixel_num * (i + 1)],
+        [0, keycap_sizes[0]["height"]],
+        [keycap_sizes[0]["width"] * i, keycap_sizes[0]["width"] * (i + 1)],
     ]
     for i in range(13)
 ]  # リスト内包表記
 keycap_line_1.append(
-    [[0, letterkey_height_pixel_num], [letterkey_width_pixel_num * 13, image_width]]
+    [[0, keycap_sizes[0]["height"]], [keycap_sizes[0]["width"] * 13, image_width]]
 )  # backspace
-
+# 2列目作成
 keycap_line_2 = [None] * 14
 for i in range(14):
     keycap_line_2[i] = [
-        [letterkey_height_pixel_num, letterkey_height_pixel_num * 2],
-        [letterkey_width_pixel_num * i, letterkey_width_pixel_num * (i + 1)],
+        [keycap_sizes[0]["height"], keycap_sizes[0]["height"] * 2],
+        [
+            keycap_sizes[1]["width"] + keycap_sizes[0]["width"] * (i - 1),
+            keycap_sizes[1]["width"] + keycap_sizes[0]["width"] * i,
+        ],
     ]
     if i == 0:
         keycap_line_2[i] = [
-            [letterkey_height_pixel_num, letterkey_height_pixel_num * 2],
-            [0, tabkey_width_pixel_num],
-        ]  # Tabkey
+            [keycap_sizes[0]["height"], keycap_sizes[0]["height"] * 2],
+            [0, keycap_sizes[1]["width"]],
+        ]  # Tab
     elif i == 13:
         keycap_line_2[i] = [
-            [int(image_height / 5), int(image_height / 5) * 2],
-            [tabkey_width_pixel_num + letterkey_width_pixel_num * (i - 1), image_width],
-        ]  # \|キー
+            [keycap_sizes[0]["height"], keycap_sizes[0]["height"] * 2],
+            [
+                keycap_sizes[1]["width"] + keycap_sizes[0]["width"] * (i - 1),
+                image_width,
+            ],
+        ]  # \|
+# 3列目作成
+keycap_line_3 = [None] * 13
+for i in range(13):
+    keycap_line_3[i] = [
+        [keycap_sizes[0]["height"] * 2, keycap_sizes[0]["height"] * 3],
+        [
+            keycap_sizes[2]["width"] + keycap_sizes[0]["width"] * (i - 1),
+            keycap_sizes[2]["width"] + keycap_sizes[0]["width"] * i,
+        ],
+    ]
+    if i == 0:
+        keycap_line_3[i] = [
+            [keycap_sizes[0]["height"] * 2, keycap_sizes[0]["height"] * 3],
+            [0, keycap_sizes[2]["width"]],
+        ]  # Tab
+    elif i == 12:
+        keycap_line_3[i] = [
+            [keycap_sizes[0]["height"] * 2, keycap_sizes[0]["height"] * 3],
+            [
+                keycap_sizes[2]["width"] + keycap_sizes[0]["width"] * (i - 1),
+                image_width,
+            ],
+        ]  # \|
+# 4列目作成
 
-keycap_line_3 = [None] * 14
-for i in range(14):
-    keycap_line_3[i] = []
-
+# keycap配列にそれぞれの列を追加
 keycap = [keycap_line_1, keycap_line_2]
 trimmed_image_list = []
 for keycap_line in keycap:
@@ -94,4 +117,3 @@ for keycap_line in keycap:
 
 for i, image in enumerate(trimmed_image_list):
     cv2.imwrite((image_path.parent / f"output_{i:04}.jpeg").as_posix(), image)
-print(keycap)
