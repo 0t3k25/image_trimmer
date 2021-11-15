@@ -1,0 +1,26 @@
+{
+  "keycap_A": {
+    "height": 1.8,
+    "width": 1.8
+  },
+  "keycap_B": {
+    "height": 1.8,
+    "width": 2.8
+  },
+  "keycap_C": {
+    "height": 1.8,
+    "width": 3.3
+  },
+  "keycap_D": {
+    "height": 1.8,
+    "width": 4.3
+  },
+  "keycap_E": {
+    "height": 1.8,
+    "width": 2.3
+  },
+  "keycap_F": {
+    "height": 1.8,
+    "width": 11.9
+  }
+}
