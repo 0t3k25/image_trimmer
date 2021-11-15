@@ -43,6 +43,7 @@ keycap_sizes = [
     )
     for keycap_config in keycap_config_json.values()
 ]
+print(keycap_sizes)
 # keycap 初期化
 # keycap_config = [[[y, dy], [x, dx]]]
 # 1列目作成
@@ -103,9 +104,65 @@ for i in range(13):
             ],
         ]  # \|
 # 4列目作成
-
+keycap_line_4 = [None] * 12
+for i in range(12):
+    keycap_line_4[i] = [
+        [keycap_sizes[0]["height"] * 3, keycap_sizes[0]["height"] * 4],
+        [
+            keycap_sizes[3]["width"] + keycap_sizes[0]["width"] * (i - 1),
+            keycap_sizes[3]["width"] + keycap_sizes[0]["width"] * i,
+        ],
+    ]
+    if i == 0:
+        keycap_line_4[i] = [
+            [keycap_sizes[0]["height"] * 3, keycap_sizes[0]["height"] * 4],
+            [0, keycap_sizes[3]["width"]],
+        ]  # Shift
+    elif i == 11:
+        keycap_line_4[i] = [
+            [keycap_sizes[0]["height"] * 2, keycap_sizes[0]["height"] * 3],
+            [
+                keycap_sizes[3]["width"] + keycap_sizes[0]["width"] * (i - 1),
+                image_width,
+            ],
+        ]  # Shift
+# 5列目作成
+keycap_line_5 = [None] * 8
+for i in range(8):
+    keycap_line_5[i] = [
+        [keycap_sizes[0]["height"] * 4, keycap_sizes[0]["height"] * 5],
+        [
+            keycap_sizes[4]["width"] * i,
+            keycap_sizes[4]["width"] * (i + 1),
+        ],
+    ]
+    if i == 3:
+        keycap_line_5[i] = [
+            [keycap_sizes[0]["height"] * 4, keycap_sizes[0]["height"] * 5],
+            [
+                keycap_sizes[4]["width"] * i,
+                keycap_sizes[4]["width"] * i + keycap_sizes[5]["width"],
+            ],
+        ]
+    elif i == 7:
+        keycap_line_5[i] = [
+            [keycap_sizes[0]["height"] * 4, keycap_sizes[0]["height"] * 5],
+            [
+                keycap_sizes[4]["width"] * (i - 1) + keycap_sizes[5]["width"],
+                image_width,
+            ],
+        ]
+    elif i > 3:
+        keycap_line_5[i] = [
+            [keycap_sizes[0]["height"] * 4, keycap_sizes[0]["height"] * 5],
+            [
+                keycap_sizes[4]["width"] * (i - 1) + keycap_sizes[5]["width"],
+                keycap_sizes[4]["width"] * i + keycap_sizes[5]["width"],
+            ],
+        ]
+print(keycap_line_5)
 # keycap配列にそれぞれの列を追加
-keycap = [keycap_line_1, keycap_line_2]
+keycap = [keycap_line_1, keycap_line_2, keycap_line_3, keycap_line_4, keycap_line_5]
 trimmed_image_list = []
 for keycap_line in keycap:
     for keycap_range in keycap_line:
@@ -114,6 +171,5 @@ for keycap_line in keycap:
             keycap_range[1][0] : keycap_range[1][1],
         ]
         trimmed_image_list.append(trimmed_image)
-
 for i, image in enumerate(trimmed_image_list):
     cv2.imwrite((image_path.parent / f"output_{i:04}.jpeg").as_posix(), image)
