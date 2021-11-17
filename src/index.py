@@ -22,7 +22,7 @@ image = cv2.imread(image_path.as_posix())
 # 画像の大きさ
 image_height, image_width = image.shape[:2]
 # 画像の高さ決定および変更
-mod_image_height = decide_pixcel.caluclate_height_pixcel_num(
+mod_image_height = decide_pixcel.calculate_height_pixcel_num(
     image_width,
     keyboard_width,
     keyboard_height,
@@ -162,9 +162,15 @@ for i in range(8):
         ]
 print(keycap_line_5)
 # keycap配列にそれぞれの列を追加
-keycap = [keycap_line_1, keycap_line_2, keycap_line_3, keycap_line_4, keycap_line_5]
+keycap_lines = [
+    keycap_line_1,
+    keycap_line_2,
+    keycap_line_3,
+    keycap_line_4,
+    keycap_line_5,
+]
 trimmed_image_list = []
-for keycap_line in keycap:
+for keycap_line in keycap_lines:
     for keycap_range in keycap_line:
         trimmed_image = image[
             keycap_range[0][0] : keycap_range[0][1],
